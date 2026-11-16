@@ -25,6 +25,7 @@ class ToolkitTests(unittest.TestCase):
         self.photos = self.home / 'exported'
         with (self.device / 'Manifest.plist').open('wb') as f:
             plistlib.dump({'IsEncrypted': False}, f)
+        (self.device / 'Status.plist').write_bytes(plistlib.dumps({'SnapshotState': 'finished'}))
         self.manifest = sqlite3.connect(self.device / 'Manifest.db')
         self.manifest.execute('CREATE TABLE Files (fileID TEXT, domain TEXT, relativePath TEXT, flags INTEGER)')
         self.add('CameraRollDomain', 'Media/DCIM/100APPLE/IMG_0001.JPG', b'a-photo')
@@ -113,6 +114,36 @@ class ToolkitTests(unittest.TestCase):
         with WhatsAppChatExporter.open_database_from_backup(self.device) as database:
             with self.assertRaises(FileExistsError):
                 WhatsAppChatExporter.export_chats(database, output)
+
+    def test_verify_rejects_unfinished_and_empty_backup(self):
+        (self.device / 'Status.plist').unlink()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(iphone_backup.main(['verify', '--backup', str(self.device)]), 2)
+        (self.device / 'Status.plist').write_bytes(plistlib.dumps({'SnapshotState': 'finished'}))
+        self.manifest.execute('DELETE FROM Files')
+        self.manifest.commit()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(iphone_backup.main(['verify', '--backup', str(self.device)]), 2)
+
+    def test_verify_rejects_symlink_bucket(self):
+        source = self.add('OtherDomain', 'Documents/link', b'outside')
+        self.manifest.commit()
+        bucket = source.parent
+        moved = self.home / 'outside'
+        bucket.rename(moved)
+        bucket.symlink_to(moved, target_is_directory=True)
+        self.assertGreater(BackupToolkit.verify_backup(self.device)['symlinks'], 0)
+
+    def test_cli_prints_hashes_and_duplicate_paths_without_report(self):
+        with contextlib.redirect_stdout(io.StringIO()) as buff:
+            self.assertEqual(iphone_backup.main(['verify', '--backup', str(self.device), '--hash-files']), 0)
+        self.assertEqual(len(json.loads(buff.getvalue())['hashes']), 5)
+        self.photos.mkdir()
+        (self.photos / 'a').write_bytes(b'dup')
+        (self.photos / 'b').write_bytes(b'dup')
+        with contextlib.redirect_stdout(io.StringIO()) as buff:
+            iphone_backup.main(['duplicates', '--path', str(self.photos)])
+        self.assertEqual(json.loads(buff.getvalue())['groups'][0]['paths'], ['a', 'b'])
 
     def test_cli_inspect(self):
         with contextlib.redirect_stdout(io.StringIO()) as buff:

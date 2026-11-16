@@ -97,8 +97,8 @@ def main(argv=None):
         return 0
     if args.command == 'verify':
         summary = BackupToolkit.verify_backup(args.backup, hash_files=args.hash_files, report=args.report)
-        print_summary({k: v for k, v in summary.items() if k != 'hashes'})
-        return 0 if not (summary['missing'] or summary['unsafe'] or summary['symlinks']) else 2
+        print_summary({k: v for k, v in summary.items() if k != 'hashes' or args.report is None})
+        return 0 if not (not summary['complete'] or summary['empty'] or summary['missing'] or summary['unsafe'] or summary['symlinks']) else 2
     if args.command == 'photos':
         summary = BackupToolkit.extract_photos(args.backup, args.output, dry_run=args.dry_run,
                                               include_all_dcim=args.include_all_dcim, report=args.report)
@@ -121,7 +121,7 @@ def main(argv=None):
         return 0
     if args.command == 'duplicates':
         summary = BackupToolkit.duplicate_report(args.path, report=args.report)
-        print_summary({k: v for k, v in summary.items() if k != 'groups'})
+        print_summary({k: v for k, v in summary.items() if k != 'groups' or args.report is None})
         return 0
     parser.error('Unknown command')
 

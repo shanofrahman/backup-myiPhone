@@ -31,7 +31,7 @@ def open_database_from_backup(root):
         for rel, fid in items.items():
             validate_entry(fid, rel)
             source = backup / fid[:2] / fid
-            if not source.is_file() or source.is_symlink():
+            if not source.is_file() or source.is_symlink() or source.parent.is_symlink():
                 raise FileNotFoundError(f'Missing chat database component: {rel}')
             shutil.copyfile(source, temp / rel)
         yield temp / 'ChatStorage.sqlite'

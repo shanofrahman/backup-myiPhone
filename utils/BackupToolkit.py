@@ -55,6 +55,12 @@ def verify_backup(root, *, hash_files=False, report=None):
     """
     backup = backup_manifest(root)
     rows = manifest_rows(backup)
+    status_path = backup / 'Status.plist'
+    try:
+        with status_path.open('rb') as stream:
+            complete = plistlib.load(stream).get('SnapshotState') == 'finished'
+    except (OSError, ValueError, plistlib.InvalidFileException):
+        complete = False
     domains = Counter()
     problems = []
     hashed = []
@@ -70,7 +76,7 @@ def verify_backup(root, *, hash_files=False, report=None):
                 problems.append({'domain': domain, 'path': rel, 'problem': 'unsafe manifest entry'})
             continue
         src = backup / fid[:2] / fid
-        if src.is_symlink():
+        if src.is_symlink() or src.parent.is_symlink():
             symlinks += 1
             if len(problems) < 100:
                 problems.append({'domain': domain, 'path': rel, 'problem': 'symlink source'})
@@ -85,6 +91,7 @@ def verify_backup(root, *, hash_files=False, report=None):
             hashed.append({'file_id': fid, 'sha256': whatsapp.sha256(src)})
     result = {
         'backup': str(backup), 'checked_at_utc': datetime.now(timezone.utc).isoformat(),
+        'complete': complete, 'empty': not rows,
         'manifest_file_count': len(rows), 'missing': missing, 'unsafe': unsafe,
         'symlinks': symlinks, 'present': len(rows) - missing - unsafe - symlinks,
         'present_size_bytes': checked_bytes,
@@ -120,7 +127,7 @@ def extract_photos(root, output, *, dry_run=False, include_all_dcim=False, repor
     output.mkdir(parents=True, exist_ok=True)
     for fid, rel in rows:
         src = backup / fid[:2] / fid
-        if not src.is_file() or src.is_symlink():
+        if not src.is_file() or src.is_symlink() or src.parent.is_symlink():
             result['missing'] += 1
             continue
         dest = output / rel

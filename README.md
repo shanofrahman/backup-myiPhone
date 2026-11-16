@@ -1,5 +1,30 @@
 # backup-myiPhone
 
+## One-command backup (PR feature branch)
+
+Install Linux dependencies, connect one USB iPhone, unlock it, and trust the computer:
+
+```bash
+sudo apt install python3 libimobiledevice-utils usbmuxd ifuse rsync fuse3 tmux
+# Python 3.11+ required
+bash run.sh /path/to/mounted/backup-drive
+```
+
+For SSH, start `tmux new -s iphone-backup` before running the script.
+`run.sh` creates a unique dated folder containing:
+
+- `device/`: full eligible iPhone device backup via `idevicebackup2`.
+- `WhatsApp/`: photos, videos, PDFs, audio, documents, stickers and chat databases.
+- `messages.jsonl`: best-effort readable chat export.
+- `DCIM/`: direct copy of the complete locally exposed DCIM tree using `ifuse` and `rsync`, followed by a checksum comparison.
+- `reports/` and `status.txt`: verification results and stage outcomes.
+
+The script is one entry point and uses the Python utilities in this checkout.
+It never deletes phone files or older backup runs. Every invocation creates a new run,
+so allow space for both the device backup and extracted copies. No personal paths are configured.
+See [runner details and limitations](docs/TOOLKIT.md#one-command-runner).
+
+
 A local-first toolkit for backing up an iPhone to Linux and extracting WhatsApp attachments without sending personal data to a server.
 
 **What this repository does**
