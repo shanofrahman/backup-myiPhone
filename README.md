@@ -91,3 +91,20 @@ python3 -m py_compile utils/*.py
 All tests use synthetic files; **never commit real backups or media**. Backup/output directories should live outside this repository.
 
 > A local iPhone backup with encryption disabled is sensitive. Protect your external drive and keep at least one verified backup before deleting anything from the phone. Do not upload private backups, logs containing personal paths, or media to GitHub.
+
+## Development: unified CLI and additional backup tools
+
+The open feature branch adds a single entry point at `iphone_backup.py`:
+
+```bash
+python3 iphone_backup.py --help
+python3 iphone_backup.py inspect --backup /path/to/iPhone_Backup_YYYY-MM-DD
+python3 iphone_backup.py verify --backup /path/to/iPhone_Backup_YYYY-MM-DD
+python3 iphone_backup.py photos --backup /path/to/iPhone_Backup_YYYY-MM-DD --output /path/to/Photos
+python3 iphone_backup.py chats --backup /path/to/iPhone_Backup_YYYY-MM-DD --output /path/to/messages.jsonl
+python3 iphone_backup.py duplicates --path /path/to/WhatsApp_Media --report /path/to/duplicates.json
+```
+
+See [complete CLI guide](docs/TOOLKIT.md) for creating backups with `device-backup`,
+WhatsApp media extraction, JSON reports, privacy warnings and limitations.
+These additions are experimental and are being reviewed before merging into `main`.
