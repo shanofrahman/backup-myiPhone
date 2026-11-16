@@ -1,4 +1,4 @@
-# Unified iPhone backup toolkit (development branch)
+# iPhone backup toolkit
 
 Run from the repository root with Python 3.11+ on Linux. Python utilities use only the standard library.
 The USB backup command also requires `idevicebackup2` and `idevicepair` from `libimobiledevice-utils`.
@@ -12,7 +12,7 @@ Connect, unlock and trust your iPhone. For an SSH session, use tmux:
 sudo apt install libimobiledevice-utils usbmuxd tmux
 idevicepair validate
 tmux new -s iphone-backup
-python3 iphone_backup.py device-backup --parent /media/$USER/SANDISK_1TB
+python3 iphone_backup.py device-backup --parent /path/to/backup-drive
 ```
 
 A new date-labelled directory is created. For multiple runs in one day, use a unique `--label`.
@@ -21,9 +21,9 @@ Wait for `Backup Successful.`. tmux protects against SSH drops, not USB disconne
 ## Inspect and verify the full backup
 
 ```bash
-BACKUP="/media/$USER/SANDISK_1TB/iPhone_Backup_YYYY-MM-DD"
+BACKUP="/path/to/backup-drive/iPhone_Backup_YYYY-MM-DD"
 python3 iphone_backup.py inspect --backup "$BACKUP"
-python3 iphone_backup.py verify --backup "$BACKUP" --report /media/$USER/SANDISK_1TB/backup-integrity.json
+python3 iphone_backup.py verify --backup "$BACKUP" --report /path/to/backup-drive/backup-integrity.json
 ```
 
 `verify` checks all hashed manifest files for presence and rejects unsafe IDs, paths and symlink sources.
@@ -32,8 +32,8 @@ With `--hash-files` it calculates a SHA-256 inventory; it cannot prove original 
 ## Extract Camera Roll photos/videos from the device backup
 
 ```bash
-python3 iphone_backup.py photos --backup "$BACKUP" --output /media/$USER/SANDISK_1TB/iPhone_CameraRoll_YYYY-MM-DD --dry-run
-python3 iphone_backup.py photos --backup "$BACKUP" --output /media/$USER/SANDISK_1TB/iPhone_CameraRoll_YYYY-MM-DD
+python3 iphone_backup.py photos --backup "$BACKUP" --output /path/to/backup-drive/iPhone_CameraRoll_YYYY-MM-DD --dry-run
+python3 iphone_backup.py photos --backup "$BACKUP" --output /path/to/backup-drive/iPhone_CameraRoll_YYYY-MM-DD
 ```
 
 Selects CameraRollDomain/Media/DCIM entries with image, video and editing-sidecar extensions,
@@ -43,15 +43,15 @@ Cloud-optimized iCloud originals might not be in the local device backup.
 ## Extract WhatsApp media, including PDFs and voice messages
 
 ```bash
-python3 iphone_backup.py whatsapp --backup "$BACKUP" --output /media/$USER/SANDISK_1TB/WhatsApp_Media_YYYY-MM-DD
+python3 iphone_backup.py whatsapp --backup "$BACKUP" --output /path/to/backup-drive/WhatsApp_Media_YYYY-MM-DD
 ```
 
-The original WhatsApp extractor is reused unchanged; it includes documents and audio by default.
+WhatsApp extraction includes documents and audio by default.
 
 ## Export WhatsApp chats (best-effort JSONL)
 
 ```bash
-python3 iphone_backup.py chats --backup "$BACKUP" --output /media/$USER/SANDISK_1TB/WhatsApp_Chat_YYYY-MM-DD.jsonl --report /media/$USER/SANDISK_1TB/chat-report.json
+python3 iphone_backup.py chats --backup "$BACKUP" --output /path/to/backup-drive/WhatsApp_Chat_YYYY-MM-DD.jsonl --report /path/to/backup-drive/chat-report.json
 ```
 
 Alternatively use `--database /path/to/ChatStorage.sqlite` instead of `--backup`.
@@ -61,7 +61,7 @@ This is not a restorable WhatsApp backup. The tool creates a temporary, unencryp
 ## Duplicate/storage report (never deletes files)
 
 ```bash
-python3 iphone_backup.py duplicates --path /media/$USER/SANDISK_1TB/WhatsApp_Media_YYYY-MM-DD --report /media/$USER/SANDISK_1TB/duplicates-YYYY-MM-DD.json
+python3 iphone_backup.py duplicates --path /path/to/backup-drive/WhatsApp_Media_YYYY-MM-DD --report /path/to/backup-drive/duplicates-YYYY-MM-DD.json
 ```
 
 Groups files by size then SHA-256. Lists duplicate paths and potential savings, without modifying files.
@@ -113,6 +113,6 @@ The runner rejects ifuse 1.2.0 because upstream documents a data corruption regr
 fixed in 1.2.1. See [ifuse documentation](https://github.com/libimobiledevice/ifuse)
 and [rsync options](https://download.samba.org/pub/rsync/rsync.1).
 
-Verification now rejects empty manifests and missing/unfinished `Status.plist` snapshots,
+Verification rejects empty manifests and missing/unfinished `Status.plist` snapshots,
 and detects symlinked hash directories. `verify --hash-files` and `duplicates` print their
 full results when no report destination is supplied.

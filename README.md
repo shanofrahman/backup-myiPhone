@@ -1,10 +1,14 @@
 # backup-myiPhone
 
-## One-command backup (PR feature branch)
+A local-first toolkit for backing up an iPhone to Linux and extracting WhatsApp attachments without sending personal data to a server.
 
-Install Linux dependencies, connect one USB iPhone, unlock it, and trust the computer:
+## One-command backup
+
+Clone the repository, install Linux dependencies, then connect and unlock one USB iPhone. Accept **Trust This Computer** if prompted:
 
 ```bash
+git clone https://github.com/shanofrahman/backup-myiPhone.git
+cd backup-myiPhone
 sudo apt install python3 libimobiledevice-utils usbmuxd ifuse rsync fuse3 tmux
 # Python 3.11+ required
 bash run.sh /path/to/mounted/backup-drive
@@ -25,18 +29,16 @@ so allow space for both the device backup and extracted copies. No personal path
 See [runner details and limitations](docs/TOOLKIT.md#one-command-runner).
 
 
-A local-first toolkit for backing up an iPhone to Linux and extracting WhatsApp attachments without sending personal data to a server.
-
 **What this repository does**
 - Documents a repeatable USB **full iPhone backup** using `idevicebackup2`.
 - Inspects the backup's `Manifest.db` to verify WhatsApp data is present.
 - Extracts WhatsApp photos, videos, **PDFs, voice messages, Office documents, stickers, and other attachments** with Python's standard library.
 - Preserves WhatsApp relative paths, checks SHA-256 after copying, and skips previously extracted files only when hashes match.
-- Documents optional iPhone Photos/DCIM export over USB.
+- Copies iPhone Photos/DCIM over USB using `ifuse` and `rsync`.
 
 **What it does not do:** bypass iPhone encryption, recover deleted media, download WhatsApp's encrypted cloud backup, or guarantee that iOS includes every WhatsApp attachment. The local backup must contain the files.
 
-## Quick start (Ubuntu)
+## Manual backup (Ubuntu)
 
 1. Connect and unlock the iPhone, then accept **Trust This Computer** if prompted.
 2. Install the tools and verify pairing:
@@ -117,9 +119,9 @@ All tests use synthetic files; **never commit real backups or media**. Backup/ou
 
 > A local iPhone backup with encryption disabled is sensitive. Protect your external drive and keep at least one verified backup before deleting anything from the phone. Do not upload private backups, logs containing personal paths, or media to GitHub.
 
-## Development: unified CLI and additional backup tools
+## Command-line tools
 
-The open feature branch adds a single entry point at `iphone_backup.py`:
+Use `iphone_backup.py` to run individual backup, extraction and reporting tasks:
 
 ```bash
 python3 iphone_backup.py --help
@@ -132,4 +134,4 @@ python3 iphone_backup.py duplicates --path /path/to/WhatsApp_Media --report /pat
 
 See [complete CLI guide](docs/TOOLKIT.md) for creating backups with `device-backup`,
 WhatsApp media extraction, JSON reports, privacy warnings and limitations.
-These additions are experimental and are being reviewed before merging into `main`.
+The tools use synthetic tests; real-device restoration has not been validated.
