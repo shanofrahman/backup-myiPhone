@@ -3,8 +3,8 @@
 A local-first toolkit for backing up an iPhone to Linux and extracting WhatsApp attachments without sending personal data to a server.
 
 **What this repository does**
-- Documents a repeatable USB **full iPhone backup** using \`idevicebackup2\`.
-- Inspects the backup's \`Manifest.db\` to verify WhatsApp data is present.
+- Documents a repeatable USB **full iPhone backup** using `idevicebackup2`.
+- Inspects the backup's `Manifest.db` to verify WhatsApp data is present.
 - Extracts WhatsApp photos, videos, **PDFs, voice messages, Office documents, stickers, and other attachments** with Python's standard library.
 - Preserves WhatsApp relative paths, checks SHA-256 after copying, and skips previously extracted files only when hashes match.
 - Documents optional iPhone Photos/DCIM export over USB.
@@ -16,52 +16,52 @@ A local-first toolkit for backing up an iPhone to Linux and extracting WhatsApp 
 1. Connect and unlock the iPhone, then accept **Trust This Computer** if prompted.
 2. Install the tools and verify pairing:
 
-\`\`\`bash
+```bash
 sudo apt update
 sudo apt install -y libimobiledevice-utils usbmuxd tmux python3
 idevicepair pair           # Run if the phone is not already paired
 idevicepair validate
 ideviceinfo -k ProductVersion
-\`\`\`
+```
 
-3. Run in \`tmux\` if connected over SSH:
+3. Run in `tmux` if connected over SSH:
 
-\`\`\`bash
+```bash
 tmux new -s iphone-backup
-\`\`\`
+```
 
 4. Set your backup destination to a **local/external drive** with enough space. This is a complete device backup, not only WhatsApp:
 
-\`\`\`bash
+```bash
 BACKUP_PARENT="/path/to/external-drive"
 BACKUP_DIR="$BACKUP_PARENT/iPhone_Backup_$(date +%F)"
 mkdir -p "$BACKUP_DIR"
 idevicebackup2 backup --full "$BACKUP_DIR"
-\`\`\`
+```
 
-Wait until the command prints **\`Backup Successful.\`** Detach from \`tmux\` using Ctrl+B, D; reattach with \`tmux attach -t iphone-backup\`.
+Wait until the command prints **`Backup Successful.`** Detach from `tmux` using Ctrl+B, D; reattach with `tmux attach -t iphone-backup`.
 
 5. Inspect the finished backup:
 
-\`\`\`bash
+```bash
 python3 utils/InspectBackup.py --backup "$BACKUP_DIR"
-\`\`\`
+```
 
-Check that \`ChatStorage.sqlite\` and a substantial number of WhatsApp \`Media/\` or \`Message/Media/\` entries are listed. A successful iPhone backup alone does **not** prove that WhatsApp media was included.
+Check that `ChatStorage.sqlite` and a substantial number of WhatsApp `Media/` or `Message/Media/` entries are listed. A successful iPhone backup alone does **not** prove that WhatsApp media was included.
 
 6. Extract media with no third-party Python dependencies:
 
-\`\`\`bash
+```bash
 OUTPUT_DIR="$BACKUP_PARENT/WhatsApp_Media_$(date +%F)"
 python3 utils/WhatsAppMediaExtractor.py --backup "$BACKUP_DIR" --output "$OUTPUT_DIR" --dry-run
 python3 utils/WhatsAppMediaExtractor.py --backup "$BACKUP_DIR" --output "$OUTPUT_DIR"
-\`\`\`
+```
 
 Run the last command **again** to resume after an interruption or after an earlier photos/videos-only extraction. Existing files are SHA-256 checked and skipped; conflicting files are not overwritten.
 
 ### Extraction options
 
-\`\`\`bash
+```bash
 # Include thumbnails/previews (normally excluded)
 python3 utils/WhatsAppMediaExtractor.py --backup "$BACKUP_DIR" --output "$OUTPUT_DIR" --include-thumbnails
 
@@ -70,9 +70,9 @@ python3 utils/WhatsAppMediaExtractor.py --backup "$BACKUP_DIR" --output "$OUTPUT
 
 # Extract the entire WhatsApp shared-container snapshot (including caches)
 python3 utils/WhatsAppMediaExtractor.py --backup "$BACKUP_DIR" --output "$OUTPUT_DIR" --full-shared-container
-\`\`\`
+```
 
-By default, the extractor includes **all file formats** in \`Media/\`, \`Message/Media/\`, \`Outbox/\`, \`stickers/\`, and \`gif/\`, excluding known preview extensions: \`.thumb\`, \`.mmsthumb\`, \`.videothumb\` and \`.favicon\`. It does **not** flatten paths or silently discard unknown attachment types. Only the normal WhatsApp shared-container domain is selected; see \`docs/WHATSAPP.md\` for scope and limitations.
+By default, the extractor includes **all file formats** in `Media/`, `Message/Media/`, `Outbox/`, `stickers/`, and `gif/`, excluding known preview extensions: `.thumb`, `.mmsthumb`, `.videothumb` and `.favicon`. It does **not** flatten paths or silently discard unknown attachment types. Only the normal WhatsApp shared-container domain is selected; see `docs/WHATSAPP.md` for scope and limitations.
 
 ## Documentation
 
@@ -83,10 +83,10 @@ By default, the extractor includes **all file formats** in \`Media/\`, \`Message
 
 ## Tests
 
-\`\`\`bash
+```bash
 python3 -m unittest discover -s tests -v
 python3 -m py_compile utils/*.py
-\`\`\`
+```
 
 All tests use synthetic files; **never commit real backups or media**. Backup/output directories should live outside this repository.
 
