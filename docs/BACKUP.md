@@ -7,7 +7,7 @@
 
 ```bash
 sudo apt update
-sudo apt install -y libimobiledevice-utils usbmuxd python3 tmux
+sudo apt install -y libimobiledevice-utils usbmuxd python3
 ```
 
 3. Verify pairing and iOS connection:
@@ -23,12 +23,6 @@ If already paired, you may only need `idevicepair validate`. Do not disclose you
 
 ## Full USB backup
 
-Run inside `tmux` if you're using SSH:
-
-```bash
-tmux new -s iphone-backup
-```
-
 Choose a destination **outside this repository** with space for a full-device backup:
 
 ```bash
@@ -40,7 +34,7 @@ idevicebackup2 backup --full "$BACKUP_DIR"
 
 Wait for **`Backup Successful.`** before using the backup. A full backup is full with respect to *backup-eligible files*, not necessarily every byte on the iPhone. `idevicebackup2` creates a device-specific folder containing `Manifest.db`, `Manifest.plist`, hashed file paths, and other metadata.
 
-For SSH: Ctrl+B then D detaches from `tmux`; `tmux attach -t iphone-backup` reattaches. The iPhone still must remain connected; `tmux` cannot protect against USB disconnects, power loss, or backup-tool failures.
+Keep the terminal open and the iPhone connected until the backup finishes.
 
 Never repeat a backup into an existing destination without first deciding how to preserve the earlier copy. For same-day retries, use an extra suffix such as `_retry2`.
 

@@ -6,17 +6,16 @@ The USB backup command also requires `idevicebackup2` and `idevicepair` from `li
 
 ## Full USB backup
 
-Connect, unlock and trust your iPhone. For an SSH session, use tmux:
+Connect, unlock and trust your iPhone:
 
 ```bash
-sudo apt install libimobiledevice-utils usbmuxd tmux
+sudo apt install libimobiledevice-utils usbmuxd
 idevicepair validate
-tmux new -s iphone-backup
 python3 iphone_backup.py device-backup --parent /path/to/backup-drive
 ```
 
 A new date-labelled directory is created. For multiple runs in one day, use a unique `--label`.
-Wait for `Backup Successful.`. tmux protects against SSH drops, not USB disconnects.
+Keep the terminal open and the iPhone connected. Wait for `Backup Successful.` before using the backup.
 
 ## Inspect and verify the full backup
 

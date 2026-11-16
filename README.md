@@ -9,12 +9,12 @@ Clone the repository, install Linux dependencies, then connect and unlock one US
 ```bash
 git clone https://github.com/shanofrahman/backup-myiPhone.git
 cd backup-myiPhone
-sudo apt install python3 libimobiledevice-utils usbmuxd ifuse rsync fuse3 tmux
+sudo apt install python3 libimobiledevice-utils usbmuxd ifuse rsync fuse3
 # Python 3.11+ required
 bash run.sh /path/to/mounted/backup-drive
 ```
 
-For SSH, start `tmux new -s iphone-backup` before running the script.
+Keep the terminal open and the iPhone connected until the script finishes.
 `run.sh` creates a unique dated folder containing:
 
 - `device/`: full eligible iPhone device backup via `idevicebackup2`.
@@ -45,19 +45,13 @@ See [runner details and limitations](docs/TOOLKIT.md#one-command-runner).
 
 ```bash
 sudo apt update
-sudo apt install -y libimobiledevice-utils usbmuxd tmux python3
+sudo apt install -y libimobiledevice-utils usbmuxd python3
 idevicepair pair           # Run if the phone is not already paired
 idevicepair validate
 ideviceinfo -k ProductVersion
 ```
 
-3. Run in `tmux` if connected over SSH:
-
-```bash
-tmux new -s iphone-backup
-```
-
-4. Set your backup destination to a **local/external drive** with enough space. This is a complete device backup, not only WhatsApp:
+3. Set your backup destination to a **local/external drive** with enough space. This is a complete device backup, not only WhatsApp:
 
 ```bash
 BACKUP_PARENT="/path/to/external-drive"
@@ -66,9 +60,9 @@ mkdir -p "$BACKUP_DIR"
 idevicebackup2 backup --full "$BACKUP_DIR"
 ```
 
-Wait until the command prints **`Backup Successful.`** Detach from `tmux` using Ctrl+B, D; reattach with `tmux attach -t iphone-backup`.
+Wait until the command prints **`Backup Successful.`** Keep the terminal open and the iPhone connected until it finishes.
 
-5. Inspect the finished backup:
+4. Inspect the finished backup:
 
 ```bash
 python3 utils/InspectBackup.py --backup "$BACKUP_DIR"
@@ -76,7 +70,7 @@ python3 utils/InspectBackup.py --backup "$BACKUP_DIR"
 
 Check that `ChatStorage.sqlite` and a substantial number of WhatsApp `Media/` or `Message/Media/` entries are listed. A successful iPhone backup alone does **not** prove that WhatsApp media was included.
 
-6. Extract media with no third-party Python dependencies:
+5. Extract media with no third-party Python dependencies:
 
 ```bash
 OUTPUT_DIR="$BACKUP_PARENT/WhatsApp_Media_$(date +%F)"
