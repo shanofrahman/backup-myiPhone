@@ -1,5 +1,30 @@
 # backup-myiPhone
 
+## One-command backup (PR feature branch)
+
+Install Linux dependencies, connect one USB iPhone, unlock it, and trust the computer:
+
+```bash
+sudo apt install python3 libimobiledevice-utils usbmuxd ifuse rsync fuse3 tmux
+# Python 3.11+ required
+bash run.sh /path/to/mounted/backup-drive
+```
+
+For SSH, start `tmux new -s iphone-backup` before running the script.
+`run.sh` creates a unique dated folder containing:
+
+- `device/`: full eligible iPhone device backup via `idevicebackup2`.
+- `WhatsApp/`: photos, videos, PDFs, audio, documents, stickers and chat databases.
+- `messages.jsonl`: best-effort readable chat export.
+- `DCIM/`: direct copy of the complete locally exposed DCIM tree using `ifuse` and `rsync`, followed by a checksum comparison.
+- `reports/` and `status.txt`: verification results and stage outcomes.
+
+The script is one entry point and uses the Python utilities in this checkout.
+It never deletes phone files or older backup runs. Every invocation creates a new run,
+so allow space for both the device backup and extracted copies. No personal paths are configured.
+See [runner details and limitations](docs/TOOLKIT.md#one-command-runner).
+
+
 A local-first toolkit for backing up an iPhone to Linux and extracting WhatsApp attachments without sending personal data to a server.
 
 **What this repository does**
@@ -91,3 +116,20 @@ python3 -m py_compile utils/*.py
 All tests use synthetic files; **never commit real backups or media**. Backup/output directories should live outside this repository.
 
 > A local iPhone backup with encryption disabled is sensitive. Protect your external drive and keep at least one verified backup before deleting anything from the phone. Do not upload private backups, logs containing personal paths, or media to GitHub.
+
+## Development: unified CLI and additional backup tools
+
+The open feature branch adds a single entry point at `iphone_backup.py`:
+
+```bash
+python3 iphone_backup.py --help
+python3 iphone_backup.py inspect --backup /path/to/iPhone_Backup_YYYY-MM-DD
+python3 iphone_backup.py verify --backup /path/to/iPhone_Backup_YYYY-MM-DD
+python3 iphone_backup.py photos --backup /path/to/iPhone_Backup_YYYY-MM-DD --output /path/to/Photos
+python3 iphone_backup.py chats --backup /path/to/iPhone_Backup_YYYY-MM-DD --output /path/to/messages.jsonl
+python3 iphone_backup.py duplicates --path /path/to/WhatsApp_Media --report /path/to/duplicates.json
+```
+
+See [complete CLI guide](docs/TOOLKIT.md) for creating backups with `device-backup`,
+WhatsApp media extraction, JSON reports, privacy warnings and limitations.
+These additions are experimental and are being reviewed before merging into `main`.
